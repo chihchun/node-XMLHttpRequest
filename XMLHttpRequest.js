@@ -183,7 +183,7 @@ exports.XMLHttpRequest = function() {
 		// Use the correct request method
 		switch (settings.method) {
 			case 'GET':
-				request = client.get(uri, headers);
+				request = client.request(uri, headers);
 				break;
 			
 			case 'POST':
@@ -211,15 +211,14 @@ exports.XMLHttpRequest = function() {
 			request.sendBody(data);
 		}
 
-		request.finish(function(resp) {
+                request.addListener("response", function(resp) {
 			response = resp;
 			response.setBodyEncoding("utf8");
 			
-			setState(this.HEADERS_RECEIVED);
-
+			setState(self.HEADERS_RECEIVED);
 			self.status = response.statusCode;
-			
-			response.addListener("body", function(chunk) {
+
+			response.addListener("data", function(chunk) {
 				// Make sure there's some data
 				if (chunk) {
 					self.responseText += chunk;
@@ -227,10 +226,11 @@ exports.XMLHttpRequest = function() {
 				setState(self.LOADING);
 			});
 	
-			response.addListener("complete", function() {
+			response.addListener("end", function() {
 				setState(self.DONE);
 			});
 		});
+                request.close();
 	};
 
 	/**
