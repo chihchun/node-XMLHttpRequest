@@ -1,3 +1,4 @@
+var sys = require('sys');
 /**
  * Wrapper for built-in http.js to emulate the browser XMLHttpRequest object.
  *
@@ -124,17 +125,15 @@ exports.XMLHttpRequest = function() {
 	 *
 	 * @param string data Optional data to send as request body.
 	 */
-	this.send = function(data) {
-		if (this.readyState != this.OPENED) {
-			throw "INVALID_STATE_ERR: connection must be opened before send() is called";
+    this.send = function(data) {
+        if (this.readyState != this.OPENED) {
+            throw "INVALID_STATE_ERR: connection must be opened before send() is called";
 		}
 		
 		/**
-		setState(this.OPENED);
-
-		 * Figure out if a host and/or port were specified.
-		 * Regex borrowed from parseUri and modified. Needs additional optimization.
-		 * @see http://blog.stevenlevithan.com/archives/parseuri
+         * Figure out if a host and/or port were specified.  Regex borrowed
+         * from parseUri and modified. Needs additional optimization.  
+         * @see http://blog.stevenlevithan.com/archives/parseuri
 		 */
 		var loc = /^(?:([^:\/?#]+):)?(?:\/\/((?:(([^:@]*)(?::([^:@]*))?)?@)?([^:\/?#]*)(?::(\d*))?))?([^?#]*)/.exec(settings.url);
 		
@@ -157,12 +156,12 @@ exports.XMLHttpRequest = function() {
 				throw "Protocol not supported.";
 		}
 		
-		// Default to port 80. If accessing localhost on another port be sure to
-		// use http://localhost:port/path
-		var port = loc[7] ? loc[7] : 80;
+        // Default to port 80. If accessing localhost on another port be sure
+        // to use http://localhost:port/path
+		var port = loc[7] || 80;
 		
 		// Set the URI, default to /
-		var uri = loc[8] ? loc[8] : "/";
+		var uri = loc[8] || "/";
 		
 		// Set the Host header or the server may reject the request
 		headers["Host"] = host;
@@ -181,38 +180,15 @@ exports.XMLHttpRequest = function() {
 		}
 		
 		// Use the correct request method
-		switch (settings.method) {
-			case 'GET':
-				request = client.request(uri, headers);
-				break;
-			
-			case 'POST':
-				request = client.post(uri, headers);
-				break;
-	
-			case 'HEAD':
-				request = client.head(uri, headers);
-				break;
-	
-			case 'PUT':
-				request = client.put(uri, headers);
-				break;
-	
-			case 'DELETE':
-				request = client.del(uri, headers);
-				break;
-	
-			default:
-				throw "Request method is unsupported.";
-		}
+        request = client.request(settings.method, uri, headers);
 
 		// Send data to the server
 		if (data) {
-			request.sendBody(data);
+			request.write(data);
 		}
 
-                request.addListener("response", function(resp) {
-			response = resp;
+        request.addListener("response", function(resp) {
+            response = resp;
 			response.setBodyEncoding("utf8");
 			
 			setState(self.HEADERS_RECEIVED);
@@ -229,8 +205,8 @@ exports.XMLHttpRequest = function() {
 			response.addListener("end", function() {
 				setState(self.DONE);
 			});
-		});
-                request.close();
+        });
+        request.close();
 	};
 
 	/**

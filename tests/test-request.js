@@ -1,49 +1,48 @@
-include("common.js");
-include("/http.js");
-
-var xhr;
-
-// Test server
-var server = createServer(function (req, res) {
-	assertEquals(methods[curMethod], req.method);
-	assertEquals("/" + methods[curMethod], req.uri.path);
-	var body = "Hello World";
-	res.sendHeader(200, {
-		"Content-Type": "text/plain",
-		"Content-Length": body.length
-	});
-	res.sendBody("Hello World");
-	res.finish();
-	
-	if (curMethod == methods.length - 1) {
-		this.close();
-		puts("done");
-	}
-}).listen(8000);
+require('./common');
 
 // Test all supported methods
 var methods = ["GET", "POST", "HEAD", "PUT", "DELETE"];
 var curMethod = 0;
 
-function start(method) {
-	p("Testing " + method);
+// Test server
+var server = http.createServer(function (req, res) {
+	assert.equal(methods[curMethod], req.method);
+	assert.equal("/" + methods[curMethod], req.url);
+	var body = "Hello World";
+	res.writeHeader(200, {
+		"Content-Type": "text/plain",
+		"Content-Length": body.length
+	});
+	res.write("Hello World");
+	res.close();
 	
-	// Reset each time
-	xhr = new XMLHttpRequest();
-	
-	xhr.onreadystatechange = function() {
-		if (this.readyState == 4) {
-			assertEquals("Hello World", this.responseText);
-			curMethod++;
-		
-			if (curMethod < methods.length) {
-				start(methods[curMethod]);
-			}
-		}
-	};
-	
-	xhr.open(method, "http://localhost:8000/" + method);
-	xhr.send();
-}
+	if (curMethod == methods.length - 1) {
+		this.close();
+		sys.puts("done");
+	}
+}).listen(8000);
 
-start(methods[curMethod]);
+// give the server some time to get ready so we don't race it
+setTimeout(function() {
+    function start(method) {
+        sys.puts("Testing " + method);
+
+        var xhr = new XMLHttpRequest();
+        
+        xhr.onreadystatechange = function() {
+            if (this.readyState == 4) {
+                assert.equal("Hello World", this.responseText);
+                curMethod++;
+            
+                if (curMethod < methods.length) {
+                    start(methods[curMethod]);
+                }
+            }
+        };
+        
+        xhr.open(method, "http://localhost:8000/" + method);
+        xhr.send();
+    }
+
+    start(methods[curMethod]);
+},100);
