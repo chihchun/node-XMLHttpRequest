@@ -5,7 +5,9 @@ var sys = require('sys');
  * This can be used with JS designed for browsers to improve reuse of code and
  * allow the use of existing libraries.
  *
- * Usage: include("XMLHttpRequest.js") and use XMLHttpRequest per W3C specs.
+ * Usage: require("XMLHttpRequest.js") and use XMLHttpRequest per W3C specs.
+ * Don't depend on case-sensitivity of HTTP Headers - RFC2616 specifies them
+ * to be case insensitive, so node.js automatically lowercases them.
  *
  * @todo SSL Support
  * @author Dan DeFelippi <dan@driverdan.com>
@@ -24,10 +26,8 @@ exports.XMLHttpRequest = function() {
 	var request;
 	var response;
 	
-	// Request settings
-	var settings = {};
+	var settings = {}; // Request settings
 	
-	// Set some default headers
 	var defaultHeaders = {
 		"User-Agent": "node.js",
 		"Accept": "*/*",
@@ -35,20 +35,13 @@ exports.XMLHttpRequest = function() {
 	
 	var headers = defaultHeaders;
 	
-	/**
-	 * Constants
-	 */
 	this.UNSENT = 0;
 	this.OPENED = 1;
 	this.HEADERS_RECEIVED = 2;
 	this.LOADING = 3;
 	this.DONE = 4;
 
-	/**
-	 * Public vars
-	 */
-	// Current state
-	this.readyState = this.UNSENT;
+	this.readyState = this.UNSENT; // Current state
 
 	// Result & response
 	this.responseText = "";
@@ -160,7 +153,6 @@ exports.XMLHttpRequest = function() {
         // to use http://localhost:port/path
 		var port = loc[7] || 80;
 		
-		// Set the URI, default to /
 		var uri = loc[8] || "/";
 		
 		// Set the Host header or the server may reject the request
@@ -168,7 +160,6 @@ exports.XMLHttpRequest = function() {
 		
 		client = http.createClient(port, host);
 
-		// Set content length header
 		if (settings.method == "GET" || settings.method == "HEAD") {
 			data = null;
 		} else if (data) {
@@ -182,10 +173,7 @@ exports.XMLHttpRequest = function() {
 		// Use the correct request method
         request = client.request(settings.method, uri, headers);
 
-		// Send data to the server
-		if (data) {
-			request.write(data);
-		}
+		if (data) request.write(data);
 
         request.addListener("response", function(resp) {
             response = resp;
@@ -219,11 +207,6 @@ exports.XMLHttpRequest = function() {
 		this.responseXML = "";
 	};
 	
-	/**
-	 * Changes readyState and calls onreadystatechange.
-	 *
-	 * @param int state New state
-	 */
 	var setState = function(state) {
 		self.readyState = state;
 		self.onreadystatechange();
