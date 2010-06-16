@@ -177,7 +177,7 @@ exports.XMLHttpRequest = function() {
 
         request.addListener("response", function(resp) {
             response = resp;
-			response.setBodyEncoding("utf8");
+			response.setEncoding("utf8");
 			
 			setState(self.HEADERS_RECEIVED);
 			self.status = response.statusCode;
@@ -194,7 +194,7 @@ exports.XMLHttpRequest = function() {
 				setState(self.DONE);
 			});
         });
-        request.close();
+        request.end();
 	};
 
 	/**

@@ -9,12 +9,12 @@ var server = http.createServer(function (req, res) {
 	assert.equal("Foobar", req.headers[header]);
 	
 	var body = "Hello World";
-	res.writeHeader(200, {
+	res.writeHead(200, {
 		"Content-Type": "text/plain",
 		"Content-Length": body.length
 	});
 	res.write("Hello World");
-	res.close();
+	res.end();
 	
 	this.close();
 }).listen(8000);

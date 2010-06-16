@@ -9,12 +9,12 @@ var server = http.createServer(function (req, res) {
 	assert.equal(methods[curMethod], req.method);
 	assert.equal("/" + methods[curMethod], req.url);
 	var body = "Hello World";
-	res.writeHeader(200, {
+	res.writeHead(200, {
 		"Content-Type": "text/plain",
 		"Content-Length": body.length
 	});
-	res.write("Hello World");
-	res.close();
+	if (req.method !== 'HEAD') res.write("Hello World");
+	res.end();
 	
 	if (curMethod == methods.length - 1) {
 		this.close();
@@ -31,7 +31,9 @@ setTimeout(function() {
         
         xhr.onreadystatechange = function() {
             if (this.readyState == 4) {
-                assert.equal("Hello World", this.responseText);
+                if (method !== 'HEAD') {
+                    assert.equal("Hello World", this.responseText);
+                }
                 curMethod++;
             
                 if (curMethod < methods.length) {
